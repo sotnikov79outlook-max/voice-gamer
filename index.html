@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Voice Gamer - Чат и Звонки</title>
+    <style>
+        body { margin: 0; display: flex; height: 100vh; font-family: sans-serif; background: #313338; color: white; }
+        .sidebar { width: 240px; background: #2b2d31; padding: 20px; display: flex; flex-direction: column; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; }
+        .messages { flex: 1; padding: 20px; overflow-y: auto; border-bottom: 1px solid #3f4147; }
+        .input-area { padding: 20px; background: #313338; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: none; background: #383a40; color: white; outline: none; }
+        .btn-call { background: #248046; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; margin-top: 20px; font-weight: bold; }
+        .btn-call:hover { background: #1a6334; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h3>Voice Gamer</h3>
+        <div># общий-чат</div>
+        <button class="btn-call" onclick="window.open('https://meet.jit.si', '_blank')">📞 НАЧАТЬ ЗВОНОК</button>
+    </div>
+    <div class="chat-area">
+        <div class="messages">
+            <p><b>Система:</b> Сайт запущен! Чтобы чат работал, мы подключили твой Firebase.</p>
+        </div>
+        <div class="input-area">
+            <input type="text" placeholder="Написать сообщение...">
+        </div>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com";
+      const firebaseConfig = {
+        apiKey: "AIzaSyCbsnB-mmhPy9notZPnnodxhvHx7ueSJSY",
+        authDomain: "voice-gamer-3ae78.firebaseapp.com",
+        projectId: "voice-gamer-3ae78",
+        storageBucket: "voice-gamer-3ae78.firebasestorage.app",
+        messagingSenderId: "163724759202",
+        appId: "1:163724759202:web:ff1438ed8993f9d31f47fb",
+        measurementId: "G-HYR291XBFV"
+      };
+      const app = initializeApp(firebaseConfig);
+    </script>
+</body>
+</html>
