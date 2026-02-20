@@ -1,308 +1,872 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Discord-подобный клон с голосовыми чатами</title>
-  <style>
-    :root{
-      --bg: #313338;
-      --sidebar: #2B2D31;
-      --text: #e8e8e8;
-      --muted: #b4b7bd;
-      --accent: #5865F2;
-      --card: #2a2d33;
-      --input: #1e2026;
-      --danger: #f04747;
-      --green: #22c55e;
-    }
+<meta charset="UTF-8" />
+<title>Voice Gamer</title>
+<style>
+  /* Общий стиль */
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #313338;
+    color: #fff;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  /* Левая панель серверов */
+  #serversPanel {
+    width: 70px;
+    background-color: #2B2D31;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+    position: relative;
+  }
+  /* Иконки серверов */
+  .serverIcon {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    background-color: #5865F2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 24px;
+    user-select: none;
+    transition: background 0.2s;
+  }
+  .serverIcon:hover {
+    background-color: #4a3ed4;
+  }
+  /* Кнопка + для создания сервера */
+  #addServerBtn {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    background-color: #5865F2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-top: auto;
+    margin-bottom: 10px;
+    font-size: 24px;
+    transition: background 0.2s;
+  }
+  #addServerBtn:hover {
+    background-color: #4a3ed4;
+  }
 
-    * { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #1f1f23; color: #fff; }
+  /* Основная часть */
+  #mainContainer {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+  }
 
-    .app { height: 100%; display: none; flex-direction: column; }
+  /* Левый блок: каналы и чат */
+  #channelsChatContainer {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    background-color: #2B2D31;
+  }
 
-    .login-screen, .app { height: 100%; width: 100%; }
-    .login-screen {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #202124;
-    }
-    .login-card {
-      width: 380px;
-      padding: 28px;
-      border-radius: 14px;
-      background: #2a2b2f;
-      box-shadow: 0 20px 40px rgba(0,0,0,.4);
-      border: 1px solid #3a3d45;
-    }
-    .login-title { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
-    .login-sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
-    .field { margin-bottom: 14px; }
-    .field label { display: block; font-size: 12px; color: #cbd5e1; margin-bottom: 6px; }
-    .field input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #3a3d45; background: #1f232a; color: #fff; outline: none; }
-    .field input::placeholder { color: #8b8f98; }
-    .login-btn { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
-    .login-btn:active { transform: scale(0.98); }
-    .login-error { color: #ff7b7b; font-size: 12px; margin-top: 6px; height: 14px; }
+  /* Заголовок сервера */
+  #serverHeader {
+    background-color: #1E1F22;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #serverTitle {
+    font-weight: bold;
+    font-size: 16px;
+  }
+  /* Меню настроек сервера */
+  #serverMenu {
+    position: absolute;
+    background-color: #2B2D31;
+    border: 1px solid #444;
+    top: 40px;
+    right: 10px;
+    display: none;
+    flex-direction: column;
+    z-index: 10;
+  }
+  #serverMenu button {
+    background: none;
+    border: none;
+    color: #fff;
+    padding: 8px 12px;
+    cursor: pointer;
+    width: 180px;
+    text-align: left;
+  }
+  #serverMenu button:hover {
+    background-color: #444;
+  }
 
-    .workspace { display: flex; height: 100vh; width: 100%; background: #1e1f24; color: #fff; }
+  /* Каналы */
+  #channelsList {
+    background-color: #313338;
+    padding: 8px;
+  }
+  /* Категория каналов */
+  .channelCategory {
+    margin-top: 10px;
+    color: #aaa;
+    font-size: 14px;
+  }
+  /* Канал */
+  .channel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  .channel:hover {
+    background-color: #444;
+  }
+  /* Название канала */
+  .channelName {
+    display: flex;
+    align-items: center;
+  }
+  /* Иконка шестеренки */
+  .channelSettings {
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  /* Чат */
+  #chatArea {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 0;
+  }
+  #messages {
+    flex: 1;
+    padding: 8px;
+    overflow-y: auto;
+    background-color: #1E1F22;
+    font-size: 14px;
+  }
+  /* Ввод сообщения */
+  #chatInputContainer {
+    display: flex;
+    border-top: 1px solid #444;
+  }
+  #chatInput {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    outline: none;
+    background-color: #2B2D31;
+    color: #fff;
+  }
+  #sendBtn {
+    padding: 8px 16px;
+    background-color: #5865F2;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    font-weight: bold;
+    transition: background 0.2s;
+  }
+  #sendBtn:hover {
+    background-color: #4a3ed4;
+  }
 
-    .servers { width: 72px; background: var(--sidebar); display: flex; flex-direction: column; align-items: center; padding: 8px 6px; gap: 10px; border-right: 1px solid #3a3d45; }
-    .server-btn { width: 48px; height: 48px; border-radius: 50%; background: #3a3f54; display: inline-flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; border: 2px solid transparent; transition: transform .08s ease, background .2s ease; font-size: 18px; }
-    .server-btn.active { background: #5865f2; border-color: #fff; transform: scale(1.05); }
-    .add-server { width: 48px; height: 48px; border-radius: 50%; border: 2px dashed #a2a8b8; color: #a2a8b8; background: transparent; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  /* Правый блок: друзья */
+  #friendsPanel {
+    width: 200px;
+    background-color: #2B2D31;
+    display: flex;
+    flex-direction: column;
+  }
+  #friendsHeader {
+    padding: 8px;
+    font-weight: bold;
+    border-bottom: 1px solid #444;
+  }
+  #friendsList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+  .friend {
+    padding: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s;
+  }
+  .friend:hover {
+    background-color: #444;
+  }
+  /* Аватар и имя */
+  .friend-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    background-color: #5865F2;
+    margin-right: 8px;
+  }
+  /* Кнопка "Добавить друга" */
+  #addFriendBtn {
+    background-color: #5865F2;
+    border: none;
+    padding: 8px;
+    margin: 8px;
+    width: calc(100% - 16px);
+    border-radius: 4px;
+    cursor: pointer;
+    color: #fff;
+    font-weight: bold;
+    transition: background 0.2s;
+  }
+  #addFriendBtn:hover {
+    background-color: #4a3ed4;
+  }
 
-    .channels { width: 260px; background: #2f3137; border-right: 1px solid #3a3d45; display: flex; flex-direction: column; }
-    .channel-header { padding: 12px 14px; font-weight: 600; color: #dbe1e8; border-bottom: 1px solid #3a3d45; background: #2a2d31; }
-    .channel-list { padding: 6px 8px; overflow-y: auto; flex: 1; }
-    .channel { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; color: #d6dbe6; font-size: 13px; cursor: default; }
-    .channel .dot { width: 8px; height: 8px; border-radius: 50%; background: #8b9bd6; }
-    .channel.active { background: #3a3d45; }
-    .channel.voice { background: #2e343b; color: #e6e6e6; }
-    .channel.voice .dot { background: #a3e2ff; }
+  /* Нижняя панель пользователя */
+  #userPanel {
+    position: absolute;
+    bottom: 0;
+    left: 70px;
+    right: 200px;
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #1E1F22;
+    border-top: 1px solid #444;
+  }
+  #avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: #5865F2;
+    margin-right: 8px;
+  }
+  #username {
+    flex: 1;
+  }
+  /* Микрофон и наушники */
+  .microphoneBtn, .headphonesBtn {
+    cursor: pointer;
+    margin: 0 8px;
+    font-size: 20px;
+    transition: filter 0.2s, color 0.2s;
+  }
+  .muted {
+    filter: grayscale(100%) contrast(0);
+    color: red;
+  }
 
-    .chat { flex: 1; display: flex; flex-direction: column; background: #1e2126; }
-    .chat-header { padding: 12px 16px; border-bottom: 1px solid #3a3d45; background: #2a2d31; display: flex; align-items: center; gap: 12px; }
-    .chat-title { font-weight: 600; }
-    .messages { flex: 1; padding: 16px; overflow-y: auto; background: #1a1c20; }
-    .message { max-width: 70%; padding: 10px 12px; border-radius: 12px; margin-bottom: 8px; background: #2b2f3a; color: #e9e9e9; word-wrap: break-word; box-shadow: 0 1px 0 rgba(0,0,0,.3); }
-    .message.me { background: #5865f2; color: #fff; align-self: flex-end; }
+  /* Настройки пользователя */
+  #userSettings {
+    font-size: 20px;
+    cursor: pointer;
+    margin-left: 8px;
+  }
 
-    .composer { display: flex; padding: 12px; gap: 8px; border-top: 1px solid #3a3d45; background: #2a2d31; }
-    .composer input { flex: 1; padding: 12px 14px; border-radius: 8px; border: 1px solid #3a3d45; background: #1e2026; color: #fff; outline: none; }
-    .composer button { padding: 12px 16px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
+  /* Модальные окна */
+  .modal-overlay {
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+  }
+  .modal {
+    background: #2B2D31;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+  }
+  .modal h2 {
+    margin-top: 0;
+    font-size: 18px;
+  }
+  .modal input, .modal select {
+    width: 100%;
+    padding: 6px;
+    margin-top: 8px;
+    border: none;
+    border-radius: 4px;
+    background-color: #444;
+    color: #fff;
+  }
+  .modal button {
+    margin-top: 12px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    background-color: #5865F2;
+    color: #fff;
+    cursor: pointer;
+  }
+  .modal button:hover {
+    background-color: #4a3ed4;
+  }
 
-    .friends { width: 320px; background: #2b2d31; border-left: 1px solid #3a3d45; display: flex; flex-direction: column; }
-    .friends-header { padding: 12px 14px; border-bottom: 1px solid #3a3d45; font-weight: 600; }
-    .friend-list { padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-    .friend { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 8px; background: #3a3d45; color: #eaeef5; }
-    .status { width: 8px; height: 8px; border-radius: 50%; background: #3fbf57; }
-    .offline { background: #555; }
+  /* Роли и управление каналами */
+  #serverSettingsPanel {
+    background-color: #2B2D31;
+    padding: 10px;
+  }
+  #rolesContainer {
+    margin-top: 10px;
+  }
+  #rolesContainer h3 {
+    margin-top: 0;
+  }
+  #rolesContainer .role {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .roleColor {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    margin-right: 8px;
+    border: 1px solid #555;
+  }
 
-    .hidden { display: none; }
-
-    .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.55); display: none; align-items: center; justify-content: center; z-index: 999; }
-    .modal.active { display: flex; }
-    .modal-card { width: 360px; background: #2b2d31; border-radius: 12px; padding: 16px; border: 1px solid #3a3d45; }
-    .modal-title { font-weight: 700; margin-bottom: 8px; }
-    .modal-field { margin-bottom: 10px; }
-    .modal-field input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #3a3d45; background: #1f232a; color: #fff; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
-    .btn { padding: 10px 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
-    .btn.secondary { background: #3a3d45; color: #fff; }
-    .btn.primary { background: var(--accent); color: #fff; }
-  </style>
+</style>
 </head>
 <body>
 
-  <div id="login" class="login-screen">
-    <div class="login-card">
-      <div class="login-title">Добро пожаловать</div>
-      <div class="login-sub">Войдите, чтобы продолжить</div>
+<!-- Левая панель серверов -->
+<div id="serversPanel">
+  <!-- Иконки серверов -->
+  <div id="serversContainer"></div>
+  <!-- Кнопка добавления сервера -->
+  <div id="addServerBtn" title="Создать сервер">+</div>
+</div>
 
-      <div class="field">
-        <label for="email">Почта</label>
-        <input type="email" id="email" placeholder="you@example.com" />
+<!-- Основной контейнер -->
+<div id="mainContainer">
+  <!-- Левая часть: каналы и чат -->
+  <div id="channelsChatContainer">
+    <!-- Заголовок и меню -->
+    <div id="serverHeader">
+      <div id="serverTitle">Выберите сервер</div>
+      <div id="serverMenuBtn" title="Меню"><b>&#9776;</b></div>
+      <div id="serverMenu">
+        <button id="serverSettingsBtn">Настройки сервера</button>
+        <button id="createChannelBtn">Создать канал</button>
+        <button id="leaveServerBtn">Покинуть сервер</button>
       </div>
-      <div class="field">
-        <label for="password">Пароль</label>
-        <input type="password" id="password" placeholder="••••••••" />
-      </div>
-      <button id="loginBtn" class="login-btn">Войти</button>
-      <div id="loginError" class="login-error" aria-live="polite"></div>
     </div>
-  </div>
-
-  <div id="app" class="app" aria-hidden="true">
-    <div class="workspace">
-      <aside class="servers" aria-label="Серверы">
-        <button class="server-btn" title="Сервер 1" aria-label="Сервер 1">S1</button>
-        <button class="server-btn" title="Сервер 2" aria-label="Сервер 2">S2</button>
-        <button class="server-btn" title="Сервер 3" aria-label="Сервер 3">S3</button>
-        <button id="addServer" class="add-server" title="Создать сервер" aria-label="Создать сервер">＋</button>
-      </aside>
-
-      <section class="channels" aria-label="Каналы">
-        <div class="channel-header">ОКЕан Каналов</div>
-        <div class="channel-list" id="channelList">
-          <div class="channel active" data-type="text" data-name="общие"><span class="dot" style="background:#8b9bd6"></span> #общие</div>
-          <div class="channel" data-type="text" data-name="VG-чат"><span class="dot" style="background:#f1c40f"></span> VG-чат</div>
-          <div class="channel voice" data-type="voice" data-name="Голосовой комнатa 1"><span class="dot" style="background:#a3e2ff"></span> Голосовой 1</div>
-          <div class="channel voice" data-type="voice" data-name="Голосовой комнатa 2"><span class="dot" style="background:#a3e2ff"></span> Гол. комнатa 2</div>
-          <div class="channel" data-type="text" data-name="голосовой активатор" style="opacity:.6; cursor:default"><span class="dot" style="background:#b35"></span> тестовый текстовый</div>
-        </div>
-      </section>
-
-      <section class="chat" aria-label="Чат">
-        <div class="chat-header">
-          <span style="width:12px;height:12px;border-radius:50%; background:#5865f2; display:inline-block;"></span>
-          <span class="chat-title" id="chatTitle">#общие</span>
-        </div>
-        <div class="messages" id="messages">
-          <div class="message">Добро пожаловать в чат! Вы можете отправлять текстовые сообщения.</div>
-        </div>
-        <div class="composer" aria-label="Поле ввода сообщений">
-          <input id="messageInput" type="text" placeholder="Сообщение..." />
-          <button id="sendBtn" class="btn" style="background: var(--accent); color:#fff;">Отправить</button>
-        </div>
-      </section>
-
-      <aside class="friends" aria-label="Друзья онлайн">
-        <div class="friends-header">Друзья</div>
-        <div class="friend-list">
-          <div class="friend"><span class="status" style="background:#22c55e"></span><span>Alex</span></div>
-          <div class="friend"><span class="status" style="background:#f59e0b"></span><span>Mila</span></div>
-          <div class="friend"><span class="status" style="background:#f87171"></span><span>Tom</span></div>
-          <div class="friend offline"><span class="status" style="background:#555"></span><span>Jane (офлайн)</span></div>
-        </div>
-      </aside>
-    </div>
-  </div>
-
-  <div id="modal" class="modal" role="dialog" aria-label="Голосовой чат">
-    <div class="modal-card">
-      <div class="modal-title">Голосовой чат (заглушка)</div>
-      <div class="modal-field" style="margin-bottom:8px;">
-        <span style="font-size:12px; color:#d6dbe6;">Вы подключились к голосовому каналу. Реальная голосовая связь не реализована в примере.</span>
-      </div>
-      <div class="modal-actions">
-        <button class="btn secondary" id="closeVoiceModal">Закрыть</button>
+    <!-- Каналы -->
+    <div id="channelsList"></div>
+    <!-- Чат -->
+    <div id="chatArea">
+      <div id="messages"></div>
+      <div id="chatInputContainer">
+        <input type="text" id="chatInput" placeholder="Введите сообщение" />
+        <button id="sendBtn">Отправить</button>
       </div>
     </div>
   </div>
+  <!-- Правый блок: друзья -->
+  <div id="friendsPanel">
+    <div id="friendsHeader">Друзья</div>
+    <div id="friendsList"></div>
+    <button id="addFriendBtn">Добавить друга</button>
+  </div>
+</div>
 
-  <script>
-    // Авторизация
-    (function(){
-      const loginBtn = document.getElementById('loginBtn');
-      const emailInput = document.getElementById('email');
-      const passwordInput = document.getElementById('password');
-      const loginError = document.getElementById('loginError');
-      const loginScreen = document.getElementById('login');
-      const app = document.getElementById('app');
+<!-- Нижняя панель пользователя -->
+<div id="userPanel">
+  <div id="avatar"></div>
+  <div id="username">Гость</div>
+  <div class="microphoneBtn" id="micBtn" title="Микрофон 🎤">🎤</div>
+  <div class="headphonesBtn" id="headphonesBtn" title="Наушники 🎧">🎧</div>
+  <div id="userSettings" title="Настройки пользователя">⚙️</div>
+</div>
 
-      function showApp() {
-        loginScreen.style.display = 'none';
-        app.style.display = 'flex';
-        document.body.style.background = '#1e1f23';
+<!-- Модальные окна -->
+<div id="modalContainer"></div>
+
+<script>
+  // ==================== Скрипт ====================
+
+  // Данные
+  let servers = [];             // Массив серверов
+  let currentServerId = null;   // ID выбранного сервера
+  let currentChannelId = null;  // ID выбранного канала
+
+  let chatMessages = {};       // Объекты сообщений по ID сервера
+  let user = { name: "Гость", avatar: null, roles: [] }; // Инфо пользователя
+  let roles = []; // Список ролей
+
+  let botResponses = {
+    "!ping": "Pong!",
+    "!help": "Доступные команды: !ping, !help, !clear",
+    "!clear": "<clear>"
+  };
+
+  // Utility: Генерация уникального ID
+  function genID() {
+    return '_' + Math.random().toString(36).substr(2,9);
+  }
+
+  // Элементы
+  const serversContainer = document.getElementById('serversContainer');
+  const channelsList = document.getElementById('channelsList');
+  const messagesDiv = document.getElementById('messages');
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const serverTitle = document.getElementById('serverTitle');
+  const serverHeader = document.getElementById('serverHeader');
+  const serverMenu = document.getElementById('serverMenu');
+  const serverMenuBtn = document.getElementById('serverMenuBtn');
+  const serverSettingsBtn = document.getElementById('serverSettingsBtn');
+  const createChannelBtn = document.getElementById('createChannelBtn');
+  const leaveServerBtn = document.getElementById('leaveServerBtn');
+
+  const friendsList = document.getElementById('friendsList');
+  const addFriendBtn = document.getElementById('addFriendBtn');
+
+  const micBtn = document.getElementById('micBtn');
+  const headphonesBtn = document.getElementById('headphonesBtn');
+
+  const avatarDiv = document.getElementById('avatar');
+  const usernameDiv = document.getElementById('username');
+
+  const modalContainer = document.getElementById('modalContainer');
+
+  // ==================== Инициализация ====================
+  document.addEventListener('DOMContentLoaded', () => {
+    // Прототипы данных: создадим пример сервера
+    createServer("Главный сервер", "G");
+    createServer("Тестовая комната", "T");
+    selectServer(servers[0].id);
+  });
+
+  // ==================== Основные функции ====================
+
+  // Создать сервер
+  function createServer(name, icon) {
+    const id = genID();
+    const server = {
+      id, name, icon, channels: [], roles: [], members: [user],
+    };
+    // Добавить по умолчанию текстовую категорию
+    server.channels.push({ id: genID(), name: "Общий", type: "text" });
+    servers.push(server);
+    renderServers();
+  }
+
+  // Отобразить все сервера
+  function renderServers() {
+    serversContainer.innerHTML = '';
+    servers.forEach(s => {
+      const iconDiv = document.createElement('div');
+      iconDiv.className = 'serverIcon';
+      iconDiv.title = s.name;
+      iconDiv.innerText = s.icon;
+      iconDiv.dataset.id = s.id;
+      iconDiv.onclick = () => { selectServer(s.id); };
+      serversContainer.appendChild(iconDiv);
+    });
+  }
+
+  // Выбрать сервер
+  function selectServer(serverId) {
+    currentServerId = serverId;
+    const server = servers.find(s => s.id === serverId);
+    if (!server) return;
+    // Обновить название
+    serverTitle.innerText = server.name;
+    // Убрать выделение со всех
+    Array.from(serversContainer.children).forEach(c => c.style.border = '');
+    // Выделить выбранный
+    const selectedIcon = Array.from(serversContainer.children).find(c => c.dataset.id===serverId);
+    if (selectedIcon) selectedIcon.style.border = '2px solid #5865F2';
+
+    // Отобразить каналы
+    renderChannels(server);
+    // Инициализация сообщений
+    if (!chatMessages[serverId]) chatMessages[serverId] = [];
+    renderMessages();
+  }
+
+  // Отобразить каналы
+  function renderChannels(server) {
+    channelsList.innerHTML = '';
+
+    // Категория "Текстовые каналы"
+    const txtCat = document.createElement('div');
+    txtCat.className = 'channelCategory';
+    txtCat.innerText = 'Текстовые каналы';
+
+    // Кнопка [+] для добавления канала
+    const addChannelBtn = document.createElement('span');
+    addChannelBtn.innerText = '[+]';
+    addChannelBtn.style.cursor = 'pointer';
+    addChannelBtn.title = 'Создать канал';
+    addChannelBtn.onclick = () => showCreateChannelModal();
+
+    txtCat.appendChild(addChannelBtn);
+    channelsList.appendChild(txtCat);
+
+    // Вывести каналы
+    server.channels.forEach(ch => {
+      const chDiv = document.createElement('div');
+      chDiv.className = 'channel';
+
+      const nameSpan = document.createElement('div');
+      nameSpan.className = 'channelName';
+      nameSpan.innerText = '# ' + ch.name;
+      nameSpan.onclick = () => {
+        currentChannelId = ch.id;
+        highlightChannel();
+      };
+      if (ch.id === currentChannelId) {
+        chDiv.style.backgroundColor = '#444';
       }
 
-      loginBtn.addEventListener('click', () => {
-        const email = emailInput.value.trim();
-        const pass = passwordInput.value.trim();
-        if (email && pass) {
-          loginError.textContent = '';
-          showApp();
+      // Иконка шестеренки
+      const gear = document.createElement('div');
+      gear.innerText = '⚙️';
+      gear.className = 'channelSettings';
+      gear.title = 'Настройки канала';
+      gear.onclick = (e)=>{
+        e.stopPropagation();
+        showChannelOptions(ch, server);
+      };
+
+      chDiv.appendChild(nameSpan);
+      chDiv.appendChild(gear);
+      channelsList.appendChild(chDiv);
+    });
+  }
+
+  // Выделить текущий канал
+  function highlightChannel() {
+    Array.from(channelsList.children).forEach(c => {
+      c.style.backgroundColor = '';
+      if (c.querySelector('.channelName') && c.querySelector('.channelName').innerText === '# ' + getChannelById(currentChannelId)?.name) {
+        c.style.backgroundColor = '#444';
+      }
+    });
+    renderMessages();
+  }
+
+  // Получить канал по ID
+  function getChannelById(id) {
+    if (!currentServerId) return null;
+    const server = servers.find(s => s.id===currentServerId);
+    return server?.channels.find(c => c.id===id);
+  }
+
+  // Отобразить сообщения
+  function renderMessages() {
+    messagesDiv.innerHTML = '';
+    const msgs = chatMessages[currentServerId] || [];
+    msgs.forEach(m => {
+      const msgDiv = document.createElement('div');
+      msgDiv.innerText = m;
+      messagesDiv.appendChild(msgDiv);
+    });
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  // Отправка сообщения
+  function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text || !currentServerId || !currentChannelId) return;
+    // Вставка сообщения
+    chatMessages[currentServerId].push(user.name + ': ' + text);
+    chatInput.value = '';
+    renderMessages();
+
+    // Бот
+    handleBotCommand(text);
+  }
+
+  // Обработка команд бота
+  function handleBotCommand(text) {
+    if (text.startsWith('!')) {
+      const cmd = text.trim();
+      if (botResponses[cmd]) {
+        if (botResponses[cmd] === '<clear>') {
+          chatMessages[currentServerId] = [];
         } else {
-          loginError.textContent = 'Введите почту и пароль';
+          chatMessages[currentServerId].push('Бот: ' + botResponses[cmd]);
         }
-      });
-
-      [emailInput, passwordInput].forEach(el => {
-        el.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginBtn.click(); });
-      });
-    })();
-
-    // Чат: текстовые сообщения
-    (function(){
-      const messages = document.getElementById('messages');
-      const input = document.getElementById('messageInput');
-      const sendBtn = document.getElementById('sendBtn');
-      const chatTitle = document.getElementById('chatTitle');
-
-      function addMessage(text, me=false) {
-        const msg = document.createElement('div');
-        msg.className = 'message' + (me ? ' me' : '');
-        msg.textContent = text;
-        messages.appendChild(msg);
-        messages.scrollTop = messages.scrollHeight;
+        renderMessages();
       }
+    }
+  }
 
-      function sendMessage() {
-        const text = input.value.trim();
-        if (text.length === 0) return;
-        addMessage(text, true);
-        input.value = '';
-      }
+  // ==================== Обработчики ====================
 
-      sendBtn.addEventListener('click', sendMessage);
-      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+sendBtn.onclick = sendMessage;
+chatInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
 
-      // Пример
-      addMessage('Это локальная копия чата. Сообщения видны только вам.');
-    })();
+// Гамбургер меню сервера
+document.getElementById('serverMenuBtn').onclick = () => {
+  serverMenu.style.display = (serverMenu.style.display==='flex') ? 'none' : 'flex';
+};
+document.addEventListener('click', e => {
+  if (!e.target.closest('#serverHeader')) {
+    serverMenu.style.display = 'none';
+  }
+});
 
-    // Обработка кликов по каналам: выделяем текстовые и голосовые
-    (function(){
-      const channelList = document.getElementById('channelList');
-      const chatTitle = document.getElementById('chatTitle');
-      const modal = document.getElementById('modal');
-      const closeVoiceModal = document.getElementById('closeVoiceModal');
-      const voiceModal = () => modal.classList.add('active');
-      const closeVoiceModalFn = () => modal.classList.remove('active');
+// Меню настройки сервера (открытие)
+document.getElementById('serverSettingsBtn').onclick = () => {
+  if (!currentServerId) return;
+  showServerSettings(currentServerId);
+  serverMenu.style.display='none';
+}
 
-      // Делегирование кликов
-      channelList.addEventListener('click', (e) => {
-        const target = e.target.closest('.channel');
-        if (!target) return;
-        // снять активность со всех
-        [...channelList.querySelectorAll('.channel')].forEach(c => c.classList.remove('active'));
-        target.classList.add('active');
+// Создать канал
+document.getElementById('createChannelBtn').onclick= ()=> {
+  showCreateChannelModal();
+  serverMenu.style.display='none';
+}
 
-        const type = target.dataset.type;
-        const name = target.dataset.name;
-        if (type === 'text') {
-          chatTitle.textContent = '#' + name;
-          // можно очистить или оставить историю
-        } else if (type === 'voice') {
-          chatTitle.textContent = 'Голосовой канал: ' + name;
-          // открыть заглушку голосового чата
-          voiceModal();
-        }
-      });
+// Покинуть сервер
+document.getElementById('leaveServerBtn').onclick= ()=> {
+  if(!currentServerId) return;
+  servers = servers.filter(s => s.id !== currentServerId);
+  currentServerId = null;
+  channelsList.innerHTML='';
+  messagesDiv.innerHTML='';
+  serverTitle.innerText='Выберите сервер';
+  document.querySelectorAll('.serverIcon').forEach(c => {
+    c.style.border='';
+    if(c.dataset.id===currentServerId) c.style.border='2px solid #5865F2';
+  });
+  renderServers();
+}
 
-      closeVoiceModal.addEventListener('click', closeVoiceModalFn);
-      modal.addEventListener('click', (ev) => { if (ev.target === modal) closeVoiceModalFn(); });
-    })();
+// Доп. функции: показать модальное окно для создания канала
+function showCreateChannelModal() {
+  showModal('Создать канал', `
+    <label>Название:</label>
+    <input type="text" id="channelNameInput" />
+    <button id="createChannelConfirm">Создать</button>
+  `);
+  document.getElementById('createChannelConfirm').onclick= ()=> {
+    const name = document.getElementById('channelNameInput').value.trim();
+    if (!name || !currentServerId) return;
+    const server = servers.find(s=>s.id===currentServerId);
+    server.channels.push({id:genID(), name, type:'text'});
+    closeModal();
+    renderChannels(server);
+  }
+}
 
-    // Модалка создания сервера (как в предыдущем примере, сохранена)
-    (function(){
-      const modal = document.getElementById('modal');
-      const addBtn = document.getElementById('addServer');
-      const closeModal = document.getElementById('closeModal');
-      const createServer = document.getElementById('createServer');
-      const serverName = document.getElementById('serverName');
-      const serverRegion = document.getElementById('serverRegion');
-      const channelList = document.getElementById('channelList');
+// Показать меню настроек сервера
+function showServerSettings(serverId) {
+  showModal('Настройки сервера', `
+    <button id="manageRolesBtn">Роли</button>
+    <button id="deleteServerBtn">Удалить сервер</button>
+  `);
+  document.getElementById('manageRolesBtn').onclick= ()=> {
+    showRolesManagement(serverId);
+  };
+  document.getElementById('deleteServerBtn').onclick= ()=> {
+    if(!confirm('Удалить этот сервер?')) return;
+    servers = servers.filter(s => s.id !== serverId);
+    if(currentServerId===serverId) {
+      currentServerId = null;
+      channelsList.innerHTML = '';
+      messagesDiv.innerHTML = '';
+      serverTitle.innerText='Выберите сервер';
+    }
+    closeModal();
+    renderServers();
+  };
+}
 
-      // Если модальное окно уже используется как голосовой заглушка, не конфликтовать
-      // Для упрощения используем повторное открытие с новой кнопкой создания сервера
-      function openModal() { modal.classList.add('active'); serverName.value = ''; serverRegion.value = ''; }
-      function closeModalFn() { modal.classList.remove('active'); }
+// Управление ролями
+function showRolesManagement(serverId) {
+  showModal('Роли', `
+    <div id="rolesContainer"></div>
+    <button id="addRoleBtn">Создать роль</button>
+  `);
+  const container = document.getElementById('rolesContainer');
+  const server = servers.find(s=>s.id===serverId);
+  function renderRoles() {
+    container.innerHTML='';
+    server.roles.forEach(r => {
+      const roleDiv = document.createElement('div');
+      roleDiv.className='role';
+      // цвет
+      const colorDiv = document.createElement('div');
+      colorDiv.className='roleColor';
+      colorDiv.style.backgroundColor=r.color;
+      // название
+      const nameSpan = document.createElement('span');
+      nameSpan.innerText=r.name;
 
-      // Первая кнопка "создать сервер" открывает пустую форму
-      addBtn.addEventListener('click', openModal);
-      // В этом примере кнопки закрытия
-      closeModal.addEventListener('click', closeModalFn);
-      modal.addEventListener('click', (e) => { if (e.target === modal) closeModalFn(); });
+      roleDiv.appendChild(colorDiv);
+      roleDiv.appendChild(nameSpan);
+      container.appendChild(roleDiv);
+    });
+  }
+  document.getElementById('addRoleBtn').onclick= ()=> {
+    showModal('Создать роль', `
+      <label>Название:</label>
+      <input type="text" id="roleName" />
+      <label>Цвет:</label>
+      <input type="color" id="roleColor" value="#5865F2"/>
+      <button id="saveRoleBtn">Создать</button>
+    `);
+    document.getElementById('saveRoleBtn').onclick= ()=> {
+      const name = document.getElementById('roleName').value.trim();
+      const color = document.getElementById('roleColor').value;
+      if(!name) return;
+      server.roles.push({name, color});
+      closeModal();
+      renderRoles();
+    }
+  }
+  renderRoles();
+}
 
-      createServer.addEventListener('click', () => {
-        const name = serverName.value.trim();
-        const region = serverRegion.value.trim() || 'us-east';
-        if (name.length === 0) { serverName.focus(); return; }
+// ==================== Контекстное меню и модальные ===================='
 
-        const newDiv = document.createElement('div');
-        newDiv.className = 'channel';
-        newDiv.dataset.type = 'text';
-        newDiv.dataset.name = name;
-        newDiv.innerHTML = '<span class="dot" style="background:#8b9bd6"></span> #' + name;
+// Показать модальное окно
+function showModal(title, contentHTML) {
+  modalContainer.innerHTML=`
+    <div class="modal-overlay">
+      <div class="modal">
+        <h2>${title}</h2>
+        ${contentHTML}
+      </div>
+    </div>
+  `;
+}
+// Закрыть модальное
+function closeModal() {
+  modalContainer.innerHTML='';
+}
 
-        channelList.appendChild(newDiv);
-        closeModalFn();
-      });
-    })();
-  </script>
+// Обработчик клика на модалке
+modalContainer.onclick = e => {
+  if(e.target.className==='modal-overlay') {
+    closeModal();
+  }
+};
+
+// ==================== Управление каналами ====================
+function showChannelOptions(channel, server) {
+  showModal('Настройки канала', `
+    <button id="renameChannelBtn">Переименовать</button>
+    <button id="deleteChannelBtn">Удалить</button>
+  `);
+  document.getElementById('renameChannelBtn').onclick= ()=> {
+    const newName = prompt('Новое название', channel.name);
+    if(newName && newName.trim()) {
+      channel.name=newName.trim();
+      closeModal();
+      renderChannels(server);
+    }
+  };
+  document.getElementById('deleteChannelBtn').onclick= ()=> {
+    server.channels=server.channels.filter(c=>c.id!==channel.id);
+    closeModal();
+    renderChannels(server);
+  };
+}
+
+// ==================== управление микрофоном и звуком ====================
+let micMuted=false;
+let headphonesMuted=false;
+
+document.getElementById('micBtn').onclick= ()=> {
+  micMuted = !micMuted;
+  updateMuteIcon('mic', micMuted);
+  showSystemMessage(micMuted ? 'Микрофон отключен' : 'Микрофон включен');
+};
+
+document.getElementById('headphonesBtn').onclick= ()=> {
+  headphonesMuted = !headphonesMuted;
+  updateMuteIcon('headphones', headphonesMuted);
+  showSystemMessage(headphonesMuted ? 'Наушники отключены' : 'Наушники включены');
+};
+
+function updateMuteIcon(type, muted) {
+  const btn= document.getElementById(type==='mic'?'micBtn':'headphonesBtn');
+  if(muted) {
+    btn.classList.add('muted');
+  } else {
+    btn.classList.remove('muted');
+  }
+}
+
+// ==================== Отправка системных сообщений ====================
+function showSystemMessage(text) {
+  const msgDiv= document.createElement('div');
+  msgDiv.innerText= text;
+  msgDiv.style.color='#ff5555';
+  messagesDiv.appendChild(msgDiv);
+  messagesDiv.scrollTop=messagesDiv.scrollHeight;
+}
+
+// ==================== Управление друзьями ====================
+
+addFriendBtn.onclick= ()=> {
+  const friendName=prompt('Введите никнейм друга');
+  if(friendName && friendName.trim()) {
+    const friendDiv= document.createElement('div');
+    friendDiv.className='friend';
+    const av= document.createElement('div');
+    av.className='friend-avatar';
+    const nameSpan= document.createElement('span');
+    nameSpan.innerText=friendName.trim();
+    friendDiv.appendChild(av);
+    friendDiv.appendChild(nameSpan);
+    friendsList.appendChild(friendDiv);
+  }
+};
+
+// ==================== Создание сервера ====================
+document.getElementById('addServerBtn').onclick= ()=> {
+  showModal('Создать сервер', `
+    <label>Название:</label>
+    <input type="text" id="serverNameInput" />
+    <label>Иконка (буква):</label>
+    <input type="text" id="serverIconInput" maxlength="1" />
+    <button id="createServerConfirm">Создать</button>
+  `);
+  document.getElementById('createServerConfirm').onclick= ()=> {
+    const name = document.getElementById('serverNameInput').value.trim();
+    const icon = document.getElementById('serverIconInput').value.trim();
+    if(!name || !icon) return;
+    createServer(name, icon);
+    closeModal();
+  };
+};
+
+// ==================== Вызовы ====================
+
+</script>
 </body>
 </html>
