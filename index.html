@@ -1,168 +1,127 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Gamer | Все в одном</title>
-    <style>
-        :root {
-            --bg-main: #313338;
-            --bg-sidebar: #2b2d31;
-            --bg-servers: #1e1f22;
-            --accent: #5865f2;
-            --text-muted: #b5bac1;
-            --green: #23a55a;
-        }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'gg sans', sans-serif; }
-        body, html { height: 100%; background: var(--bg-main); color: white; overflow: hidden; }
+<style>
+  /* ПАНЕЛЬ ПОЛЬЗОВАТЕЛЯ (СНИЗУ СЛЕВА) */
+  .user-container {
+    background: #232428;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto; /* Прижимаем к самому низу боковой панели */
+    height: 52px;
+  }
 
-        .screen { display: none; height: 100%; width: 100%; }
-        .screen.active { display: flex; }
+  .user-avatar-small {
+    width: 32px;
+    height: 32px;
+    background: #5865F2;
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+  }
 
-        /* 1. LANDING PAGE (ГЛАВНАЯ) */
-        #landing-screen { 
-            background: linear-gradient(135deg, #404eed 0%, #23272a 100%);
-            flex-direction: column; align-items: center; justify-content: center; text-align: center;
-        }
-        .hero-h1 { font-size: 60px; text-transform: uppercase; margin-bottom: 20px; }
-        .btn-web { background: white; color: black; padding: 15px 40px; border-radius: 30px; font-weight: bold; cursor: pointer; border: none; font-size: 18px; }
+  /* Зеленый статус "В сети" на аватарке */
+  .status-indicator {
+    width: 10px;
+    height: 10px;
+    background: #23a55a;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border: 2px solid #232428;
+  }
 
-        /* 2. AUTH SCREENS (ВХОД / РЕГИСТРАЦИЯ) */
-        .auth-bg { background: radial-gradient(circle, #404eed 0%, #23272a 100%); justify-content: center; align-items: center; }
-        .auth-card { background: #313338; padding: 32px; border-radius: 8px; width: 450px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
-        .auth-input { width: 100%; background: #1e1f22; border: none; padding: 10px; color: white; border-radius: 3px; margin: 10px 0; outline: none; }
-        .auth-btn { width: 100%; background: var(--accent); color: white; border: none; padding: 12px; border-radius: 3px; cursor: pointer; font-weight: bold; }
+  .user-details {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.2;
+    cursor: pointer;
+    overflow: hidden;
+  }
 
-        /* 3. MAIN APP (ЧАТ И СЕРВЕРЫ) */
-        #app-screen { flex-direction: row; }
-        .sidebar-servers { width: 72px; background: var(--bg-servers); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 8px; }
-        .srv-icon { width: 48px; height: 48px; background: #313338; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-        .srv-icon:hover { border-radius: 15px; background: var(--accent); }
-        
-        .sidebar-channels { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; }
-        .chat-area { flex: 1; display: flex; flex-direction: column; }
-        .messages { flex: 1; padding: 20px; overflow-y: auto; }
-        .msg-input-box { padding: 20px; }
-        .msg-input { width: 100%; background: #383a40; border: none; padding: 12px; border-radius: 8px; color: white; outline: none; }
+  .user-details b { color: white; display: block; white-space: nowrap; text-overflow: ellipsis; }
+  .user-details span { color: #b5bac1; font-size: 11px; }
 
-        /* 4. SETTINGS (НАСТРОЙКИ) */
-        #settings-screen { background: var(--bg-sidebar); }
-        .settings-layout { display: flex; width: 100%; }
-        .settings-nav { width: 280px; padding: 60px 20px 20px 60px; display: flex; flex-direction: column; gap: 5px; }
-        .settings-content { flex: 1; background: #313338; padding: 60px 40px; position: relative; overflow-y: auto; }
-        .close-settings { position: absolute; right: 40px; top: 60px; cursor: pointer; border: 2px solid var(--text-muted); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+  /* КНОПКИ МИКРОФОНА И НАУШНИКОВ */
+  .user-actions {
+    display: flex;
+    gap: 2px;
+  }
 
-        /* Кнопки и утилиты */
-        .hidden { display: none; }
-        .user-panel { margin-top: auto; background: #232428; padding: 8px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
-    </style>
-</head>
-<body>
+  .action-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #b5bac1;
+    font-size: 18px;
+    transition: 0.1s;
+  }
 
-    <!-- 1. LANDING -->
-    <div id="landing-screen" class="screen active">
-        <h1 class="hero-h1">Voice Gamer</h1>
-        <p style="margin-bottom: 30px; font-size: 20px;">Место, где рождаются легенды.</p>
-        <button class="btn-web" onclick="showScreen('login-screen')">ОТКРЫТЬ В БРАУЗЕРЕ</button>
-    </div>
+  .action-icon:hover {
+    background: #3f4147;
+    color: #dbdee1;
+  }
 
-    <!-- 2. LOGIN -->
-    <div id="login-screen" class="screen auth-bg">
-        <div class="auth-card">
-            <h2>С возвращением!</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Рады тебя видеть!</p>
-            <input type="text" class="auth-input" id="login-mail" placeholder="E-mail">
-            <input type="password" class="auth-input" id="login-pass" placeholder="Пароль">
-            <button class="auth-btn" onclick="showScreen('app-screen')">Вход</button>
-            <p style="margin-top:15px; font-size:13px;">Нужен аккаунт? <span style="color: #00a8fc; cursor:pointer;" onclick="showScreen('register-screen')">Зарегистрироваться</span></p>
-        </div>
-    </div>
+  /* Стиль для МУТА (красный перечеркнутый) */
+  .action-icon.muted {
+    color: #f23f42;
+  }
+</style>
 
-    <!-- 3. REGISTER -->
-    <div id="register-screen" class="screen auth-bg">
-        <div class="auth-card">
-            <h2>Создать аккаунт</h2>
-            <input type="text" class="auth-input" id="reg-name" placeholder="Имя пользователя">
-            <input type="text" class="auth-input" placeholder="E-mail">
-            <input type="password" class="auth-input" placeholder="Пароль">
-            <button class="auth-btn" onclick="showScreen('app-screen')">Продолжить</button>
-            <p style="margin-top:15px; font-size:13px; color: #00a8fc; cursor:pointer;" onclick="showScreen('login-screen')">Уже есть аккаунт?</p>
-        </div>
-    </div>
+<!-- РАЗМЕТКА ПАНЕЛИ -->
+<div class="user-container">
+  <div class="user-avatar-small">
+    <div class="status-indicator"></div>
+  </div>
+  
+  <div class="user-details" onclick="window.location.href='settings.html'">
+    <b>Dheed_TOP</b>
+    <span>#0001</span>
+  </div>
 
-    <!-- 4. MAIN APP -->
-    <div id="app-screen" class="screen">
-        <div class="sidebar-servers">
-            <div class="srv-icon" style="background: var(--accent)">VG</div>
-            <div class="srv-icon" style="color:var(--green); font-size:24px;">+</div>
-            <div class="srv-icon" style="color:var(--green); font-size:20px; margin-top: auto;">🧭</div>
-        </div>
-        <div class="sidebar-channels">
-            <div style="padding:15px; font-weight:bold; border-bottom: 1px solid #1e1f22;">Voice Gamer Server</div>
-            <div style="padding:10px; flex:1;">
-                <div style="color:var(--text-muted); font-size:12px; font-weight:bold; margin-bottom:8px;">ТЕКСТОВЫЕ КАНАЛЫ</div>
-                <div style="padding:8px; background:#3f4147; border-radius:4px; cursor:pointer;"># основной</div>
-            </div>
-            <!-- Панель юзера -->
-            <div class="user-panel" onclick="showScreen('settings-screen')">
-                <div style="width:32px; height:32px; background:var(--accent); border-radius:50%"></div>
-                <div style="font-size: 13px;"><b>Dheed_TOP</b><br><span style="color:var(--text-muted); font-size:10px;">#0001</span></div>
-                <div style="margin-left:auto;">⚙️</div>
-            </div>
-        </div>
-        <div class="chat-area">
-            <div style="height:48px; border-bottom:1px solid #26272d; display:flex; align-items:center; padding-left:15px; font-weight:bold;"># основной</div>
-            <div class="messages" id="chat-box">
-                <div><b>Система:</b> Добро пожаловать на сервер!</div>
-            </div>
-            <div class="msg-input-box">
-                <input type="text" class="msg-input" placeholder="Написать в #основной" onkeypress="handleMsg(event)">
-            </div>
-        </div>
-    </div>
+  <div class="user-actions">
+    <!-- Кнопка Микрофона -->
+    <div class="action-icon" id="mic-btn" title="Выключить микрофон" onclick="toggleMic()">🎤</div>
+    
+    <!-- Кнопка Наушников -->
+    <div class="action-icon" id="head-btn" title="Выключить звук" onclick="toggleAudio()">🎧</div>
+    
+    <!-- Кнопка Настроек -->
+    <div class="action-icon" title="Настройки пользователя" onclick="window.location.href='settings.html'">⚙️</div>
+  </div>
+</div>
 
-    <!-- 5. SETTINGS -->
-    <div id="settings-screen" class="screen">
-        <div class="settings-layout">
-            <div class="settings-nav">
-                <div style="font-size:12px; color:var(--text-muted); font-weight:bold; margin-bottom:10px;">НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ</div>
-                <div style="padding:8px; background:#3f4147; border-radius:4px;">Моя учётная запись</div>
-                <div style="padding:8px; color:var(--text-muted); cursor:pointer;">Конфиденциальность</div>
-                <div style="padding:8px; color:#f23f42; margin-top:20px; cursor:pointer;" onclick="showScreen('landing-screen')">Выйти</div>
-            </div>
-            <div class="settings-content">
-                <div class="close-settings" onclick="showScreen('app-screen')">ESC</div>
-                <h2>Моя учётная запись</h2>
-                <div style="background:#1e1f22; padding:20px; border-radius:8px; margin-top:20px;">
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <div style="width:80px; height:80px; background:var(--accent); border-radius:50%"></div>
-                        <h3>Dheed_TOP <span style="color:var(--text-muted); font-weight:normal;">#0001</span></h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<script>
+  // ЛОГИКА ДЛЯ МУТА МИКРОФОНА
+  function toggleMic() {
+    const btn = document.getElementById('mic-btn');
+    btn.classList.toggle('muted');
+    
+    if (btn.classList.contains('muted')) {
+      btn.innerText = '🔇'; // Иконка выключенного
+      btn.title = 'Включить микрофон';
+    } else {
+      btn.innerText = '🎤'; // Иконка включенного
+      btn.title = 'Выключить микрофон';
+    }
+  }
 
-    <script>
-        // Функция переключения экранов
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
-
-        // Логика чата
-        function handleMsg(e) {
-            if (e.key === 'Enter' && e.target.value.trim() !== "") {
-                const box = document.getElementById('chat-box');
-                const div = document.createElement('div');
-                div.style.marginBottom = "8px";
-                div.innerHTML = `<b>Вы:</b> ${e.target.value}`;
-                box.appendChild(div);
-                e.target.value = "";
-                box.scrollTop = box.scrollHeight;
-            }
-        }
-    </script>
-</body>
-</html>
+  // ЛОГИКА ДЛЯ ГЛУШЕНИЯ НАУШНИКОВ
+  function toggleAudio() {
+    const btn = document.getElementById('head-btn');
+    btn.classList.toggle('muted');
+    
+    if (btn.classList.contains('muted')) {
+      btn.innerText = '❌'; // Иконка выключенного звука
+      btn.title = 'Включить звук';
+    } else {
+      btn.innerText = '🎧'; // Иконка включенного звука
+      btn.title = 'Выключить звук';
+    }
+  }
+</script>
