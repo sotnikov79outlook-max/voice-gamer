@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Discord-подобный клон</title>
+  <title>Discord-подобный клон с голосовыми чатами</title>
   <style>
     :root{
       --bg: #313338;
@@ -14,19 +14,14 @@
       --card: #2a2d33;
       --input: #1e2026;
       --danger: #f04747;
+      --green: #22c55e;
     }
 
     * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #1f1f23; color: #fff; }
 
-    /* Контейнер всего приложения */
-    .app {
-      height: 100%;
-      display: none; /* по умолчанию скрыто, показ будет после авторизации */
-      flex-direction: column;
-    }
+    .app { height: 100%; display: none; flex-direction: column; }
 
-    /* Экран входа */
     .login-screen, .app { height: 100%; width: 100%; }
     .login-screen {
       display: flex;
@@ -42,260 +37,66 @@
       box-shadow: 0 20px 40px rgba(0,0,0,.4);
       border: 1px solid #3a3d45;
     }
-    .login-title {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-    .login-sub {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 20px;
-    }
-    .field {
-      margin-bottom: 14px;
-    }
-    .field label {
-      display: block;
-      font-size: 12px;
-      color: #cbd5e1;
-      margin-bottom: 6px;
-      letter-spacing: .4px;
-    }
-    .field input {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 8px;
-      border: 1px solid #3a3d45;
-      background: #1f232a;
-      color: #fff;
-      outline: none;
-    }
+    .login-title { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+    .login-sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; color: #cbd5e1; margin-bottom: 6px; }
+    .field input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #3a3d45; background: #1f232a; color: #fff; outline: none; }
     .field input::placeholder { color: #8b8f98; }
-    .login-btn {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: none;
-      background: var(--accent);
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform .08s ease;
-    }
+    .login-btn { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
     .login-btn:active { transform: scale(0.98); }
     .login-error { color: #ff7b7b; font-size: 12px; margin-top: 6px; height: 14px; }
 
-    /* Основная рабочая зона (после входа) */
-    .workspace {
-      display: flex;
-      height: 100vh;
-      width: 100%;
-      background: #1e1f24;
-      color: #fff;
-    }
+    .workspace { display: flex; height: 100vh; width: 100%; background: #1e1f24; color: #fff; }
 
-    /* Левая панель серверов */
-    .servers {
-      width: 72px;
-      background: var(--sidebar);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 8px 6px;
-      gap: 10px;
-      border-right: 1px solid #3a3d45;
-    }
-    .server-btn {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: #3a3f54;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: transform .08s ease, background .2s ease;
-      font-size: 18px;
-    }
-    .server-btn.active {
-      background: #5865f2;
-      border-color: #fff;
-      transform: scale(1.05);
-    }
-    .add-server {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: 2px dashed #a2a8b8;
-      color: #a2a8b8;
-      background: transparent;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
+    .servers { width: 72px; background: var(--sidebar); display: flex; flex-direction: column; align-items: center; padding: 8px 6px; gap: 10px; border-right: 1px solid #3a3d45; }
+    .server-btn { width: 48px; height: 48px; border-radius: 50%; background: #3a3f54; display: inline-flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; border: 2px solid transparent; transition: transform .08s ease, background .2s ease; font-size: 18px; }
+    .server-btn.active { background: #5865f2; border-color: #fff; transform: scale(1.05); }
+    .add-server { width: 48px; height: 48px; border-radius: 50%; border: 2px dashed #a2a8b8; color: #a2a8b8; background: transparent; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
 
-    /* Средняя панель: каналы */
-    .channels {
-      width: 260px;
-      background: #2f3137;
-      border-right: 1px solid #3a3d45;
-      display: flex;
-      flex-direction: column;
-    }
-    .channel-header {
-      padding: 12px 14px;
-      font-weight: 600;
-      color: #dbe1e8;
-      border-bottom: 1px solid #3a3d45;
-      background: #2a2d31;
-    }
-    .channel-list {
-      padding: 6px 8px;
-      overflow-y: auto;
-      flex: 1;
-    }
-    .channel {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 8px;
-      border-radius: 6px;
-      color: #d6dbe6;
-      font-size: 13px;
-      cursor: default;
-    }
-    .channel .dot {
-      width: 8px; height: 8px; border-radius: 50%; background: #8b9bd6;
-    }
+    .channels { width: 260px; background: #2f3137; border-right: 1px solid #3a3d45; display: flex; flex-direction: column; }
+    .channel-header { padding: 12px 14px; font-weight: 600; color: #dbe1e8; border-bottom: 1px solid #3a3d45; background: #2a2d31; }
+    .channel-list { padding: 6px 8px; overflow-y: auto; flex: 1; }
+    .channel { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; color: #d6dbe6; font-size: 13px; cursor: default; }
+    .channel .dot { width: 8px; height: 8px; border-radius: 50%; background: #8b9bd6; }
     .channel.active { background: #3a3d45; }
+    .channel.voice { background: #2e343b; color: #e6e6e6; }
+    .channel.voice .dot { background: #a3e2ff; }
 
-    /* Центральная зона чата */
-    .chat {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: #1e2126;
-    }
-    .chat-header {
-      padding: 12px 16px;
-      border-bottom: 1px solid #3a3d45;
-      background: #2a2d31;
-      display: flex; align-items: center; gap: 12px;
-    }
+    .chat { flex: 1; display: flex; flex-direction: column; background: #1e2126; }
+    .chat-header { padding: 12px 16px; border-bottom: 1px solid #3a3d45; background: #2a2d31; display: flex; align-items: center; gap: 12px; }
     .chat-title { font-weight: 600; }
-    .messages {
-      flex: 1;
-      padding: 16px;
-      overflow-y: auto;
-      background: #1a1c20;
-    }
-    .message {
-      max-width: 70%;
-      padding: 10px 12px;
-      border-radius: 12px;
-      margin-bottom: 8px;
-      background: #2b2f3a;
-      color: #e9e9e9;
-      word-wrap: break-word;
-      box-shadow: 0 1px 0 rgba(0,0,0,.3);
-    }
+    .messages { flex: 1; padding: 16px; overflow-y: auto; background: #1a1c20; }
+    .message { max-width: 70%; padding: 10px 12px; border-radius: 12px; margin-bottom: 8px; background: #2b2f3a; color: #e9e9e9; word-wrap: break-word; box-shadow: 0 1px 0 rgba(0,0,0,.3); }
     .message.me { background: #5865f2; color: #fff; align-self: flex-end; }
 
-    .composer {
-      display: flex;
-      padding: 12px;
-      gap: 8px;
-      border-top: 1px solid #3a3d45;
-      background: #2a2d31;
-    }
-    .composer input {
-      flex: 1;
-      padding: 12px 14px;
-      border-radius: 8px;
-      border: 1px solid #3a3d45;
-      background: #1e2026;
-      color: #fff;
-      outline: none;
-    }
-    .composer button {
-      padding: 12px 16px;
-      border-radius: 8px;
-      border: none;
-      background: var(--accent);
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-    }
+    .composer { display: flex; padding: 12px; gap: 8px; border-top: 1px solid #3a3d45; background: #2a2d31; }
+    .composer input { flex: 1; padding: 12px 14px; border-radius: 8px; border: 1px solid #3a3d45; background: #1e2026; color: #fff; outline: none; }
+    .composer button { padding: 12px 16px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
 
-    /* Правая панель: друзья */
-    .friends {
-      width: 320px;
-      background: #2b2d31;
-      border-left: 1px solid #3a3d45;
-      display: flex; flex-direction: column;
-    }
-    .friends-header {
-      padding: 12px 14px;
-      border-bottom: 1px solid #3a3d45;
-      font-weight: 600;
-    }
-    .friend-list {
-      padding: 8px;
-      overflow-y: auto;
-      display: flex; flex-direction: column; gap: 8px;
-    }
-    .friend {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px; border-radius: 8px;
-      background: #3a3d45; color: #eaeef5;
-    }
-    .status {
-      width: 8px; height: 8px; border-radius: 50%; background: #3fbf57;
-    }
+    .friends { width: 320px; background: #2b2d31; border-left: 1px solid #3a3d45; display: flex; flex-direction: column; }
+    .friends-header { padding: 12px 14px; border-bottom: 1px solid #3a3d45; font-weight: 600; }
+    .friend-list { padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .friend { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 8px; background: #3a3d45; color: #eaeef5; }
+    .status { width: 8px; height: 8px; border-radius: 50%; background: #3fbf57; }
     .offline { background: #555; }
 
-    /* Вспомогательные стили */
     .hidden { display: none; }
 
-    /* Модальное окно создания сервера */
-    .modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,.55);
-      display: none;
-      align-items: center; justify-content: center;
-      z-index: 999;
-    }
+    .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.55); display: none; align-items: center; justify-content: center; z-index: 999; }
     .modal.active { display: flex; }
-    .modal-card {
-      width: 360px;
-      background: #2b2d31;
-      border-radius: 12px;
-      padding: 16px;
-      border: 1px solid #3a3d45;
-    }
+    .modal-card { width: 360px; background: #2b2d31; border-radius: 12px; padding: 16px; border: 1px solid #3a3d45; }
     .modal-title { font-weight: 700; margin-bottom: 8px; }
     .modal-field { margin-bottom: 10px; }
-    .modal-field input {
-      width: 100%; padding: 10px 12px; border-radius: 8px;
-      border: 1px solid #3a3d45; background: #1f232a; color: #fff;
-    }
+    .modal-field input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #3a3d45; background: #1f232a; color: #fff; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
-    .btn {
-      padding: 10px 14px; border-radius: 8px; border: none;
-      cursor: pointer; font-weight: 600;
-    }
+    .btn { padding: 10px 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
     .btn.secondary { background: #3a3d45; color: #fff; }
     .btn.primary { background: var(--accent); color: #fff; }
   </style>
 </head>
 <body>
 
-  <!-- Экран входа -->
   <div id="login" class="login-screen">
     <div class="login-card">
       <div class="login-title">Добро пожаловать</div>
@@ -314,11 +115,8 @@
     </div>
   </div>
 
-  <!-- Основное приложение (скрыто пока не авторизованы) -->
   <div id="app" class="app" aria-hidden="true">
-
     <div class="workspace">
-      <!-- Левая панель серверов -->
       <aside class="servers" aria-label="Серверы">
         <button class="server-btn" title="Сервер 1" aria-label="Сервер 1">S1</button>
         <button class="server-btn" title="Сервер 2" aria-label="Сервер 2">S2</button>
@@ -326,25 +124,24 @@
         <button id="addServer" class="add-server" title="Создать сервер" aria-label="Создать сервер">＋</button>
       </aside>
 
-      <!-- Панель каналов -->
       <section class="channels" aria-label="Каналы">
         <div class="channel-header">ОКЕан Каналов</div>
         <div class="channel-list" id="channelList">
-          <div class="channel active"><span class="dot" style="background:#8b9bd6"></span> #общие</div>
-          <div class="channel"><span class="dot" style="background:#f1c40f"></span> VG-чат</div>
-          <div class="channel"><span class="dot" style="background:#34d399"></span> голосовой</div>
+          <div class="channel active" data-type="text" data-name="общие"><span class="dot" style="background:#8b9bd6"></span> #общие</div>
+          <div class="channel" data-type="text" data-name="VG-чат"><span class="dot" style="background:#f1c40f"></span> VG-чат</div>
+          <div class="channel voice" data-type="voice" data-name="Голосовой комнатa 1"><span class="dot" style="background:#a3e2ff"></span> Голосовой 1</div>
+          <div class="channel voice" data-type="voice" data-name="Голосовой комнатa 2"><span class="dot" style="background:#a3e2ff"></span> Гол. комнатa 2</div>
+          <div class="channel" data-type="text" data-name="голосовой активатор" style="opacity:.6; cursor:default"><span class="dot" style="background:#b35"></span> тестовый текстовый</div>
         </div>
       </section>
 
-      <!-- Центральная область чата -->
       <section class="chat" aria-label="Чат">
         <div class="chat-header">
           <span style="width:12px;height:12px;border-radius:50%; background:#5865f2; display:inline-block;"></span>
-          <span class="chat-title">#общие</span>
+          <span class="chat-title" id="chatTitle">#общие</span>
         </div>
         <div class="messages" id="messages">
-          <!-- Пример начального сообщения -->
-          <div class="message">Добро пожаловать в чат! Напишите сообщение ниже, чтобы оно появилось здесь.</div>
+          <div class="message">Добро пожаловать в чат! Вы можете отправлять текстовые сообщения.</div>
         </div>
         <div class="composer" aria-label="Поле ввода сообщений">
           <input id="messageInput" type="text" placeholder="Сообщение..." />
@@ -352,52 +149,32 @@
         </div>
       </section>
 
-      <!-- Правая панель дружественный список -->
       <aside class="friends" aria-label="Друзья онлайн">
         <div class="friends-header">Друзья</div>
         <div class="friend-list">
-          <div class="friend">
-            <span class="status" style="background:#22c55e"></span>
-            <span>Alex</span>
-          </div>
-          <div class="friend">
-            <span class="status" style="background:#f59e0b"></span>
-            <span>Mila</span>
-          </div>
-          <div class="friend">
-            <span class="status" style="background:#f87171"></span>
-            <span>Tom</span>
-          </div>
-          <div class="friend offline">
-            <span class="status" style="background:#555"></span>
-            <span>Jane (офлайн)</span>
-          </div>
+          <div class="friend"><span class="status" style="background:#22c55e"></span><span>Alex</span></div>
+          <div class="friend"><span class="status" style="background:#f59e0b"></span><span>Mila</span></div>
+          <div class="friend"><span class="status" style="background:#f87171"></span><span>Tom</span></div>
+          <div class="friend offline"><span class="status" style="background:#555"></span><span>Jane (офлайн)</span></div>
         </div>
       </aside>
     </div>
   </div>
 
-  <!-- Модальное окно создания сервера -->
-  <div id="modal" class="modal" role="dialog" aria-label="Создать сервер">
+  <div id="modal" class="modal" role="dialog" aria-label="Голосовой чат">
     <div class="modal-card">
-      <div class="modal-title">Создать сервер</div>
-      <div class="modal-field">
-        <label for="serverName" style="font-size:12px; color:#d6dbe6;">Название сервера</label>
-        <input id="serverName" type="text" placeholder="Новый сервер" />
-      </div>
-      <div class="modal-field">
-        <label for="serverRegion" style="font-size:12px; color:#d6dbe6;">Регион</label>
-        <input id="serverRegion" type="text" placeholder="us-east" />
+      <div class="modal-title">Голосовой чат (заглушка)</div>
+      <div class="modal-field" style="margin-bottom:8px;">
+        <span style="font-size:12px; color:#d6dbe6;">Вы подключились к голосовому каналу. Реальная голосовая связь не реализована в примере.</span>
       </div>
       <div class="modal-actions">
-        <button class="btn secondary" id="closeModal">Отмена</button>
-        <button class="btn primary" id="createServer">Создать</button>
+        <button class="btn secondary" id="closeVoiceModal">Закрыть</button>
       </div>
     </div>
   </div>
 
   <script>
-    // Простая логика авторизации: проверка не пустых полей
+    // Авторизация
     (function(){
       const loginBtn = document.getElementById('loginBtn');
       const emailInput = document.getElementById('email');
@@ -409,7 +186,6 @@
       function showApp() {
         loginScreen.style.display = 'none';
         app.style.display = 'flex';
-        // скрыть экран авторизации и показать приложение
         document.body.style.background = '#1e1f23';
       }
 
@@ -424,19 +200,17 @@
         }
       });
 
-      // простая клавиша Enter для входа
       [emailInput, passwordInput].forEach(el => {
-        el.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') loginBtn.click();
-        });
+        el.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginBtn.click(); });
       });
     })();
 
-    // Основная интерактивность чата
+    // Чат: текстовые сообщения
     (function(){
       const messages = document.getElementById('messages');
       const input = document.getElementById('messageInput');
       const sendBtn = document.getElementById('sendBtn');
+      const chatTitle = document.getElementById('chatTitle');
 
       function addMessage(text, me=false) {
         const msg = document.createElement('div');
@@ -454,15 +228,46 @@
       }
 
       sendBtn.addEventListener('click', sendMessage);
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') sendMessage();
-      });
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-      // Предустановка: показать пример
+      // Пример
       addMessage('Это локальная копия чата. Сообщения видны только вам.');
     })();
 
-    // Модалка создания сервера
+    // Обработка кликов по каналам: выделяем текстовые и голосовые
+    (function(){
+      const channelList = document.getElementById('channelList');
+      const chatTitle = document.getElementById('chatTitle');
+      const modal = document.getElementById('modal');
+      const closeVoiceModal = document.getElementById('closeVoiceModal');
+      const voiceModal = () => modal.classList.add('active');
+      const closeVoiceModalFn = () => modal.classList.remove('active');
+
+      // Делегирование кликов
+      channelList.addEventListener('click', (e) => {
+        const target = e.target.closest('.channel');
+        if (!target) return;
+        // снять активность со всех
+        [...channelList.querySelectorAll('.channel')].forEach(c => c.classList.remove('active'));
+        target.classList.add('active');
+
+        const type = target.dataset.type;
+        const name = target.dataset.name;
+        if (type === 'text') {
+          chatTitle.textContent = '#' + name;
+          // можно очистить или оставить историю
+        } else if (type === 'voice') {
+          chatTitle.textContent = 'Голосовой канал: ' + name;
+          // открыть заглушку голосового чата
+          voiceModal();
+        }
+      });
+
+      closeVoiceModal.addEventListener('click', closeVoiceModalFn);
+      modal.addEventListener('click', (ev) => { if (ev.target === modal) closeVoiceModalFn(); });
+    })();
+
+    // Модалка создания сервера (как в предыдущем примере, сохранена)
     (function(){
       const modal = document.getElementById('modal');
       const addBtn = document.getElementById('addServer');
@@ -470,36 +275,31 @@
       const createServer = document.getElementById('createServer');
       const serverName = document.getElementById('serverName');
       const serverRegion = document.getElementById('serverRegion');
-      const serverList = document.getElementById('channelList'); // временно используем как часть примера
+      const channelList = document.getElementById('channelList');
 
-      function openModal() {
-        modal.classList.add('active');
-        serverName.value = '';
-        serverRegion.value = '';
-      }
-      function closeModalFn() {
-        modal.classList.remove('active');
-      }
+      // Если модальное окно уже используется как голосовой заглушка, не конфликтовать
+      // Для упрощения используем повторное открытие с новой кнопкой создания сервера
+      function openModal() { modal.classList.add('active'); serverName.value = ''; serverRegion.value = ''; }
+      function closeModalFn() { modal.classList.remove('active'); }
 
+      // Первая кнопка "создать сервер" открывает пустую форму
       addBtn.addEventListener('click', openModal);
+      // В этом примере кнопки закрытия
       closeModal.addEventListener('click', closeModalFn);
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) closeModalFn();
-      });
+      modal.addEventListener('click', (e) => { if (e.target === modal) closeModalFn(); });
 
       createServer.addEventListener('click', () => {
         const name = serverName.value.trim();
         const region = serverRegion.value.trim() || 'us-east';
-        if (name.length === 0) {
-          serverName.focus();
-          return;
-        }
-        // Простая демонстрация: добавим строку в список каналов как префикс сервера
-        // Это не полноценная функциональность сервера, но соответствует задаче демонстрации
+        if (name.length === 0) { serverName.focus(); return; }
+
         const newDiv = document.createElement('div');
         newDiv.className = 'channel';
-        newDiv.innerHTML = '<span class="dot" style="background:#8b9bd6"></span> #' + document.createTextNode(name).data;
-        document.getElementById('channelList').appendChild(newDiv);
+        newDiv.dataset.type = 'text';
+        newDiv.dataset.name = name;
+        newDiv.innerHTML = '<span class="dot" style="background:#8b9bd6"></span> #' + name;
+
+        channelList.appendChild(newDiv);
         closeModalFn();
       });
     })();
